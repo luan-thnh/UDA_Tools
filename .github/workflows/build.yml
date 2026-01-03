@@ -7,7 +7,7 @@ on:
       - 'v*'
   pull_request:
     branches: [main, master]
-  workflow_dispatch: # Cho phép chạy thủ công
+  workflow_dispatch:
 
 jobs:
   build:
@@ -40,17 +40,27 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-
-      # Linux specific - Install tkinter
+      # Install tkinter - Linux
       - name: Install tkinter (Linux)
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y python3-tk
+          sudo apt-get install -y python3-tk upx-ucl
+
+      # Install UPX - macOS
+      - name: Install UPX (macOS)
+        if: runner.os == 'macOS'
+        run: brew install upx
+
+      # Install UPX - Windows
+      - name: Install UPX (Windows)
+        if: runner.os == 'Windows'
+        run: choco install upx -y
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
 
       - name: Build with PyInstaller
         run: python build.py
@@ -62,7 +72,7 @@ jobs:
           path: dist/${{ matrix.artifact_name }}
           retention-days: 30
 
-  # Job để tạo Release khi push tag
+  # Tạo Release khi push tag
   release:
     needs: build
     runs-on: ubuntu-latest
@@ -74,7 +84,7 @@ jobs:
         with:
           path: artifacts
 
-      - name: Display structure of downloaded files
+      - name: Display structure
         run: ls -R artifacts
 
       - name: Create Release
@@ -86,5 +96,6 @@ jobs:
             artifacts/UDA_Auto_Grader-macos-x64/*
           draft: false
           prerelease: false
+          generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
