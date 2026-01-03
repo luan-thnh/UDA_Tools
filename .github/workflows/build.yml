@@ -17,16 +17,16 @@ jobs:
         include:
           - os: ubuntu-latest
             name: Linux
-            artifact_name: UDA_Auto_Grader
-            asset_name: UDA_Auto_Grader-linux-x64
+            artifact_name: UDA_Tools_Pro
+            asset_name: UDA_Tools_Pro-linux-x64
           - os: windows-latest
             name: Windows
-            artifact_name: UDA_Auto_Grader.exe
-            asset_name: UDA_Auto_Grader-windows-x64.exe
+            artifact_name: UDA_Tools_Pro.exe
+            asset_name: UDA_Tools_Pro-windows-x64.exe
           - os: macos-latest
             name: macOS
-            artifact_name: UDA_Auto_Grader
-            asset_name: UDA_Auto_Grader-macos-x64
+            artifact_name: UDA_Tools_Pro
+            asset_name: UDA_Tools_Pro-macos-x64
 
     runs-on: ${{ matrix.os }}
     name: Build for ${{ matrix.name }}
@@ -40,19 +40,16 @@ jobs:
         with:
           python-version: '3.11'
 
-      # Install tkinter - Linux
       - name: Install system dependencies (Linux)
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
           sudo apt-get install -y python3-tk upx-ucl
 
-      # Install UPX - macOS
       - name: Install UPX (macOS)
         if: runner.os == 'macOS'
         run: brew install upx
 
-      # Install UPX - Windows
       - name: Install UPX (Windows)
         if: runner.os == 'Windows'
         run: choco install upx -y
@@ -65,16 +62,13 @@ jobs:
       - name: Build with PyInstaller
         run: python build.py
 
-      # Rename artifact với tên rõ ràng
       - name: Rename artifact (Linux/macOS)
         if: runner.os != 'Windows'
-        run: |
-          mv dist/${{ matrix.artifact_name }} dist/${{ matrix.asset_name }}
+        run: mv dist/${{ matrix.artifact_name }} dist/${{ matrix.asset_name }}
 
       - name: Rename artifact (Windows)
         if: runner.os == 'Windows'
-        run: |
-          move dist\${{ matrix.artifact_name }} dist\${{ matrix.asset_name }}
+        run: move dist\${{ matrix.artifact_name }} dist\${{ matrix.asset_name }}
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -83,9 +77,6 @@ jobs:
           path: dist/${{ matrix.asset_name }}
           retention-days: 30
 
-  # ============================================
-  # TẠO RELEASE KHI PUSH TAG
-  # ============================================
   release:
     needs: build
     runs-on: ubuntu-latest
@@ -100,19 +91,19 @@ jobs:
       - name: Download Linux artifact
         uses: actions/download-artifact@v4
         with:
-          name: UDA_Auto_Grader-linux-x64
+          name: UDA_Tools_Pro-linux-x64
           path: release-files
 
       - name: Download Windows artifact
         uses: actions/download-artifact@v4
         with:
-          name: UDA_Auto_Grader-windows-x64.exe
+          name: UDA_Tools_Pro-windows-x64.exe
           path: release-files
 
       - name: Download macOS artifact
         uses: actions/download-artifact@v4
         with:
-          name: UDA_Auto_Grader-macos-x64
+          name: UDA_Tools_Pro-macos-x64
           path: release-files
 
       - name: List release files
@@ -121,34 +112,45 @@ jobs:
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
-          name: UDA Auto Grader ${{ github.ref_name }}
+          name: UDA Tools Pro ${{ github.ref_name }}
           body: |
-            ## 🎓 UDA Auto Grader ${{ github.ref_name }}
+            ## 🚀 UDA Tools Pro ${{ github.ref_name }}
 
-            Tool tự động nhập điểm cho hệ thống quản lý điểm của Đại học Đông Á (UDA).
+            All-in-one tool suite cho giang vien Dai hoc Dong A.
 
             ### 📥 Download
 
             | Platform | File |
             |----------|------|
-            | Windows | `UDA_Auto_Grader-windows-x64.exe` |
-            | macOS | `UDA_Auto_Grader-macos-x64` |
-            | Linux | `UDA_Auto_Grader-linux-x64` |
+            | Windows | `UDA_Tools_Pro-windows-x64.exe` |
+            | macOS | `UDA_Tools_Pro-macos-x64` |
+            | Linux | `UDA_Tools_Pro-linux-x64` |
 
-            ### ⚠️ Lưu ý
-            - Cần có Chrome, Brave, Edge hoặc Chromium browser đã cài đặt
-            - Có thể cấu hình đường dẫn browser trong phần **Cài đặt**
+            ### ✨ Tinh nang
 
-            ### 🆕 Tính năng mới
-            - ⚙️ Cài đặt browser tùy chỉnh (hỗ trợ Brave, Edge, Chromium...)
-            - 🔇 Chế độ chạy ẩn (Headless)
-            - 💾 Nhớ tài khoản và cấu hình
-            - 📊 Thanh tiến trình
+            **Tab 1 - Nhap Diem UDA:**
+            - Nhap/Xoa diem tu file Excel
+            - Auto-detect Chrome/Chromium
+            - Che do Headless
+            - Nho tai khoan
+
+            **Tab 2 - HRM Auto:**
+            - Tu dong check-in cong viec hang ngay
+            - Random noi dung tu danh sach
+            - Ho tro Cronjob (Ubuntu, Windows, macOS)
+            - Xem lich su hoat dong
+
+            ### ⚠️ Yeu cau
+            - Chrome, Brave, Edge hoac Chromium browser
+            - Selenium 4+ tu dong tai ChromeDriver
+
+            ### 📋 Cronjob
+            Xem huong dan Cronjob trong app de tu dong chay moi ngay!
           draft: false
           prerelease: false
           files: |
-            release-files/UDA_Auto_Grader-linux-x64
-            release-files/UDA_Auto_Grader-windows-x64.exe
-            release-files/UDA_Auto_Grader-macos-x64
+            release-files/UDA_Tools_Pro-linux-x64
+            release-files/UDA_Tools_Pro-windows-x64.exe
+            release-files/UDA_Tools_Pro-macos-x64
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

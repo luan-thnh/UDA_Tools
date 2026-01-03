@@ -1,117 +1,142 @@
-# 🎓 UDA Auto Grader Pro v3.5
+# 🚀 UDA Tools Pro v4.0
 
-Tool tự động nhập điểm cho hệ thống quản lý điểm của Đại học Đông Á (UDA).
+All-in-one tool suite cho giảng viên Đại học Đông Á (UDA).
 
-## 📋 Tính năng
+## ✨ Tính năng
+
+### Tab 1: Nhập Điểm UDA
 
 - ✅ Tự động đăng nhập vào hệ thống UDA
-- ✅ Nhập điểm hàng loạt từ file Excel
-- ✅ Xóa điểm hàng loạt
-- ✅ Hỗ trợ nhiều loại điểm: KTTX, CCAN, GHP, TDNH, THTN, TLDA, THI1
-- ✅ Giao diện đẹp với CustomTkinter
-- ✅ Hỗ trợ Windows, macOS, Linux
-- ✅ **Cấu hình browser tùy chỉnh** (Chrome, Brave, Edge, Chromium...)
-- ✅ Chế độ chạy ẩn (Headless mode)
-- ✅ Nhớ tài khoản và cấu hình
+- ✅ Nhập/Xóa điểm hàng loạt từ file Excel
+- ✅ Hỗ trợ: KTTX, CCAN, GHP, TDNH, THTN, TLDA, THI1
+- ✅ Auto-detect Chrome/Chromium/Brave/Edge
+- ✅ Chế độ Headless (chạy ẩn)
+- ✅ Nhớ tài khoản
 
-## 🛠️ Yêu cầu hệ thống
+### Tab 2: HRM Auto Check-in
 
-- **Python 3.9+** (để build)
-- **Trình duyệt Chromium-based**:
-  - Google Chrome (khuyến nghị)
-  - Chromium
-  - Microsoft Edge
-  - Brave Browser
-  - Vivaldi
-- **ChromeDriver** (tự động tải khi chạy Selenium 4+)
+- ✅ Tự động check-in công việc hàng ngày
+- ✅ **Random nội dung** từ danh sách (mỗi ngày khác nhau!)
+- ✅ Hỗ trợ **Cronjob** (Ubuntu, Windows, macOS)
+- ✅ Xem **lịch sử** hoạt động
+- ✅ Chế độ Headless
 
 ---
 
-## 🆕 Tính năng mới v3.5
+## 🛠️ Yêu cầu
 
-### ⚙️ Cài đặt Browser tùy chỉnh
-
-Click nút **"⚙️ Cài đặt"** ở góc trên phải để cấu hình:
-
-- **Chrome/Chromium Path**: Đường dẫn tới file thực thi của browser
-- **ChromeDriver Path**: Đường dẫn tới ChromeDriver (tùy chọn)
-
-#### Đường dẫn phổ biến:
-
-| Browser  | Windows                                                              | macOS                                                            | Linux                       |
-| -------- | -------------------------------------------------------------------- | ---------------------------------------------------------------- | --------------------------- |
-| Chrome   | `C:\Program Files\Google\Chrome\Application\chrome.exe`              | `/Applications/Google Chrome.app/Contents/MacOS/Google Chrome`   | `/usr/bin/google-chrome`    |
-| Brave    | `C:\Program Files\BraveSoftware\Brave-Browser\Application\brave.exe` | `/Applications/Brave Browser.app/Contents/MacOS/Brave Browser`   | `/usr/bin/brave-browser`    |
-| Edge     | `C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe`       | `/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge` | `/usr/bin/microsoft-edge`   |
-| Chromium | -                                                                    | `/Applications/Chromium.app/Contents/MacOS/Chromium`             | `/usr/bin/chromium-browser` |
+- **Trình duyệt**: Chrome, Brave, Edge, hoặc Chromium
+- **ChromeDriver**: Tự động quản lý bởi Selenium 4+
 
 ---
 
-## 🚀 Build Cross-Platform với GitHub Actions (Khuyến nghị)
+## 📥 Cài đặt
 
-### Bước 1: Push code lên GitHub
+### Tải từ Releases
 
-```bash
-git init
-git add .
-git commit -m "Initial commit"
-git remote add origin https://github.com/luan-thnh/UDA_Auto_Grader.git
-git push -u origin main
-```
+Download file phù hợp với OS:
 
-### Bước 2: GitHub tự động build
+- **Windows**: `UDA_Tools_Pro-windows-x64.exe`
+- **macOS**: `UDA_Tools_Pro-macos-x64`
+- **Linux**: `UDA_Tools_Pro-linux-x64`
 
-Sau khi push, GitHub Actions sẽ tự động build cho:
-
-- ✅ **Windows** (`.exe`)
-- ✅ **macOS**
-- ✅ **Linux**
-
-### Bước 3: Download artifacts
-
-1. Vào tab **Actions** trên GitHub
-2. Click vào workflow run mới nhất
-3. Download file từ phần **Artifacts**
-
-### Bước 4: Tạo Release
+### Chạy từ source
 
 ```bash
-git tag v3.5.0
-git push origin v3.5.0
+# Clone repo
+git clone https://github.com/luan-thnh/UDA_Auto_Grader.git
+cd UDA_Auto_Grader
+
+# Cài dependencies
+pip install -r requirements.txt
+
+# Chạy
+python uda_tools.py
 ```
 
 ---
 
-## 🔧 Build thủ công (Local)
+## 🔄 Cronjob - Tự động chạy hàng ngày
 
-### Yêu cầu
-
-#### Ubuntu/Debian
+### 🐧 Ubuntu/Linux
 
 ```bash
-sudo apt-get install -y python3-tk upx-ucl
+# Mở crontab
+crontab -e
+
+# Thêm dòng (chạy lúc 8:00 sáng)
+0 8 * * * /usr/bin/python3 /path/to/uda_tools.py --hrm-auto
+
+# Kiểm tra
+crontab -l
 ```
 
-#### macOS
+### 🪟 Windows (Task Scheduler)
+
+1. Mở **Task Scheduler** (`taskschd.msc`)
+2. **Create Basic Task...**
+3. Trigger: **Daily**, lúc 8:00 AM
+4. Action: **Start a program**
+   - Program: `python.exe`
+   - Arguments: `C:\path\to\uda_tools.py --hrm-auto`
+
+### 🍎 macOS (launchd)
 
 ```bash
-brew install upx
+# Tạo file ~/Library/LaunchAgents/com.uda.hrm.plist
+
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+"http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.uda.hrm</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/usr/bin/python3</string>
+        <string>/path/to/uda_tools.py</string>
+        <string>--hrm-auto</string>
+    </array>
+    <key>StartCalendarInterval</key>
+    <dict>
+        <key>Hour</key>
+        <integer>8</integer>
+        <key>Minute</key>
+        <integer>0</integer>
+    </dict>
+</dict>
+</plist>
+
+# Load
+launchctl load ~/Library/LaunchAgents/com.uda.hrm.plist
 ```
 
-#### Windows
+---
 
-```cmd
-choco install upx -y
+## 📁 Cấu trúc
+
+```
+📦 UDA_Tools_Pro/
+├── 📄 uda_tools.py           # Main app (GUI + CLI)
+├── 📄 build.py               # Build script
+├── 📄 requirements.txt       # Dependencies
+├── 📄 template.xlsx          # Excel template
+├── 📁 .github/workflows/     # CI/CD
+└── 📄 README.md
 ```
 
-### Build
+---
+
+## 🔧 Build
+
+### GitHub Actions (Khuyến nghị)
+
+Push lên GitHub → Actions tự động build → Download từ Releases
+
+### Build thủ công
 
 ```bash
-# Tạo và kích hoạt venv
-python3 -m venv .venv
-source .venv/bin/activate  # Linux/macOS
-# hoặc .venv\Scripts\activate trên Windows
-
 # Cài dependencies
 pip install -r requirements.txt
 
@@ -119,115 +144,61 @@ pip install -r requirements.txt
 python build.py
 ```
 
-### Kết quả
-
-| Platform | Output                     | Size      |
-| -------- | -------------------------- | --------- |
-| Windows  | `dist/UDA_Auto_Grader.exe` | ~12-15 MB |
-| macOS    | `dist/UDA_Auto_Grader`     | ~12-15 MB |
-| Linux    | `dist/UDA_Auto_Grader`     | ~12-15 MB |
+Kết quả: `dist/UDA_Tools_Pro` (hoặc `.exe` trên Windows)
 
 ---
 
-## 🎯 Hướng dẫn sử dụng
+## 📊 Random Content
 
-1. **Chạy ứng dụng**
-
-2. **Cấu hình browser** (nếu cần):
-
-   - Click ⚙️ **Cài đặt**
-   - Chọn đường dẫn Chrome/Browser
-
-3. **Nhập thông tin**:
-
-   - Tài khoản giảng viên
-   - Mật khẩu
-   - Mã môn học (copy từ web UDA)
-
-4. **Chọn file Excel** (phải có cột IDSV)
-
-5. **Chọn cột điểm** cần nhập/xóa
-
-6. **Nhấn NHẬP ĐIỂM hoặc XÓA ĐIỂM**
-
----
-
-## 📝 Định dạng file Excel
-
-| Cột  | Mô tả                 | Bắt buộc |
-| ---- | --------------------- | -------- |
-| IDSV | Mã số sinh viên       | ✅       |
-| KTTX | Kiểm tra thường xuyên | ❌       |
-| CCAN | Chuyên cần            | ❌       |
-| GHP  | Giữa học phần         | ❌       |
-| TDNH | Thảo luận nhóm        | ❌       |
-| THTN | Thực hành/Thí nghiệm  | ❌       |
-| TLDA | Tiểu luận/Đồ án       | ❌       |
-| THI1 | Thi lần 1             | ❌       |
-
----
-
-## 📁 Cấu trúc thư mục
+Trong tab HRM, nhập nhiều nội dung công việc (mỗi dòng 1 nội dung):
 
 ```
-Nhap diem/
-├── .github/workflows/build.yml  # GitHub Actions
-├── tool_nhap_diem_uda.py        # Source code chính
-├── template.xlsx                # File mẫu Excel
-├── requirements.txt             # Dependencies
-├── build.py                     # Script build
-├── build.sh                     # Build script (Linux/macOS)
-├── build.bat                    # Build script (Windows)
-├── .gitignore
-└── README.md
+Soạn nội dung thực hành
+Hỗ trợ sinh viên
+Chấm bài tập
+Soạn đề thi
+Chuẩn bị slide bài giảng
+```
+
+Mỗi lần chạy, tool sẽ **random chọn 1 nội dung** → Không bị trùng lặp!
+
+---
+
+## 📂 Vị trí lưu dữ liệu
+
+```
+~/.uda_tools/
+├── config.json    # Cấu hình
+├── history.json   # Lịch sử
+└── app.log        # Log
 ```
 
 ---
 
-## 🔧 Troubleshooting
+## 🐛 Troubleshooting
 
-### Lỗi "No module named 'tkinter'"
+### Lỗi "Chrome not found"
 
-```bash
-# Ubuntu/Debian
-sudo apt-get install python3-tk
+1. Click **Cài đặt** ở góc trên phải
+2. Nhập đường dẫn tới Chrome/Brave/Edge
+3. Hoặc để trống nếu đã cài Chrome mặc định
 
-# macOS
-brew install python-tk@3.11
-```
+### Lỗi "Timeout"
 
-### Lỗi "WebDriver" / "Chrome not found"
+- Kiểm tra kết nối mạng
+- Tăng timeout trong code nếu server chậm
 
-1. Click ⚙️ **Cài đặt**
-2. Chọn đường dẫn tới Chrome/Browser của bạn
-3. Lưu và thử lại
+### HRM không check-in
 
-### Lỗi "ChromeDriver version mismatch"
-
-- Selenium 4+ tự động quản lý ChromeDriver
-- Nếu vẫn lỗi, tải ChromeDriver phù hợp và cấu hình trong Cài đặt
-
-### Muốn dùng Brave/Edge thay Chrome
-
-1. Click ⚙️ **Cài đặt**
-2. Nhập đường dẫn tới Brave/Edge executable
-3. Lưu
-
----
-
-## 📂 Vị trí lưu cấu hình
-
-Cấu hình được lưu tại:
-
-- **Windows**: `C:\Users\<username>\.uda_grader\config.json`
-- **macOS/Linux**: `~/.uda_grader/config.json`
+- Kiểm tra email/password
+- Chạy thử với Headless = OFF để debug
 
 ---
 
 ## 📄 License
 
-MIT License - Sử dụng tự do cho mục đích giáo dục.
+MIT License
 
-## 👨‍💻 Tác giả
+## 👨‍💻 Author
 
 Developed for UDA (Đại học Đông Á)

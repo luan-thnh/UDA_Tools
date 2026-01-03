@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Cross-platform build script for UDA Auto Grader Tool
+Cross-platform build script for UDA Tools Pro
 Supports: Windows, macOS, Linux
 """
 
@@ -17,21 +17,21 @@ if sys.platform == "win32":
     sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace')
 
 # =====================================================
-# =============== CẤU HÌNH BUILD ======================
+# =============== CAU HINH BUILD ======================
 # =====================================================
 
-APP_NAME = "UDA_Auto_Grader"
-MAIN_SCRIPT = "tool_nhap_diem_uda.py"
-VERSION = "3.4.0"
+APP_NAME = "UDA_Tools_Pro"
+MAIN_SCRIPT = "uda_tools.py"
+VERSION = "4.0.0"
 
-# Icon files (optional - create these if you have icons)
-ICON_WIN = "icon.ico"      # Windows icon
-ICON_MAC = "icon.icns"     # macOS icon
-ICON_LINUX = "icon.png"    # Linux icon
+# Icon files (optional)
+ICON_WIN = "icon.ico"
+ICON_MAC = "icon.icns"
+ICON_LINUX = "icon.png"
 
 # Additional data files to bundle
 DATA_FILES = [
-    ("template.xlsx", "."),  # (source, destination in bundle)
+    ("template.xlsx", "."),
 ]
 
 # Hidden imports that PyInstaller might miss
@@ -50,26 +50,15 @@ HIDDEN_IMPORTS = [
 ]
 
 # Cac module khong can thiet - loai bo de giam size
+# LUU Y: Khong exclude cac module selenium vi chung duoc import trong __init__.py
 EXCLUDES = [
     # Test frameworks
     "pytest", "unittest", "doctest", "test",
-    # Khong can cac browser khac
-    "selenium.webdriver.firefox",
-    "selenium.webdriver.edge", 
-    "selenium.webdriver.safari",
-    "selenium.webdriver.ie",
-    "selenium.webdriver.remote",
-    "selenium.webdriver.webkitgtk",
-    "selenium.webdriver.wpewebkit",
     # Khong can debugging tools
     "pdb", "profile", "cProfile",
-    # Email/network khong can
-    "email", "html.parser", "ftplib", "imaplib", "smtplib",
     # Packages khong su dung
     "numpy", "pandas", "matplotlib", "scipy",
     "PIL.ImageQt", "PIL.ImageTk",
-    "asyncio", "concurrent",
-    "multiprocessing",
     "xmlrpc", "curses",
 ]
 

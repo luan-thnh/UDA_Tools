@@ -8,13 +8,11 @@ import openpyxl
 import sys
 import json
 import logging
-from datetime import datetime
 
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.chrome.service import Service
 from selenium.common.exceptions import WebDriverException, TimeoutException
 
 # =====================================================
@@ -62,28 +60,70 @@ EXCEL_MAP = {
 
 NHAP_DIEM_URL = "https://uda.edu.vn/cbgv/gv_nhapdiem"
 CONFIG_FILE = os.path.join(LOG_DIR, "config.json")
-VERSION = "3.5.0"
+VERSION = "3.6.0"
 
 # =====================================================
-# ============== QUẢN LÝ CẤU HÌNH =====================
+# ============== AUTO DETECT CHROME ===================
+# =====================================================
+def detect_chrome_path():
+    """Tu dong tim Chrome/Chromium tren he thong"""
+    candidates = []
+    
+    if sys.platform == "win32":
+        # Windows paths
+        candidates = [
+            os.path.expandvars(r"%ProgramFiles%\Google\Chrome\Application\chrome.exe"),
+            os.path.expandvars(r"%ProgramFiles(x86)%\Google\Chrome\Application\chrome.exe"),
+            os.path.expandvars(r"%LocalAppData%\Google\Chrome\Application\chrome.exe"),
+            os.path.expandvars(r"%ProgramFiles%\BraveSoftware\Brave-Browser\Application\brave.exe"),
+            os.path.expandvars(r"%ProgramFiles(x86)%\Microsoft\Edge\Application\msedge.exe"),
+        ]
+    elif sys.platform == "darwin":
+        # macOS paths
+        candidates = [
+            "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+            "/Applications/Chromium.app/Contents/MacOS/Chromium",
+            "/Applications/Brave Browser.app/Contents/MacOS/Brave Browser",
+            "/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge",
+        ]
+    else:
+        # Linux paths
+        candidates = [
+            "/usr/bin/google-chrome",
+            "/usr/bin/google-chrome-stable",
+            "/usr/bin/chromium",
+            "/usr/bin/chromium-browser",
+            "/usr/bin/brave-browser",
+            "/usr/bin/microsoft-edge",
+            "/snap/bin/chromium",
+        ]
+    
+    for path in candidates:
+        if os.path.exists(path):
+            return path
+    
+    return None
+
+# =====================================================
+# ============== QUAN LY CAU HINH =====================
 # =====================================================
 def load_config():
-    """Load cấu hình đã lưu"""
+    """Load cau hinh da luu"""
     try:
         if os.path.exists(CONFIG_FILE):
             with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
                 return json.load(f)
     except Exception as e:
-        logger.error(f"Lỗi load config: {e}")
+        logger.error(f"Loi load config: {e}")
     return {}
 
 def save_config(config):
-    """Lưu cấu hình"""
+    """Luu cau hinh"""
     try:
         with open(CONFIG_FILE, 'w', encoding='utf-8') as f:
             json.dump(config, f, ensure_ascii=False, indent=2)
     except Exception as e:
-        logger.error(f"Lỗi save config: {e}")
+        logger.error(f"Loi save config: {e}")
 
 # =====================================================
 # ============== LOGIC XỬ LÝ (BACKEND) ================
@@ -142,22 +182,21 @@ def read_excel_openpyxl(filepath):
 
 def run_tool(username, password, monhoc, excel_file, selected_titles, 
              status_callback, progress_callback=None, is_delete_mode=False, 
-             headless=False, chrome_path=None, chromedriver_path=None):
+             headless=False, chrome_path=None):
     """
-    Hàm chính thực hiện nhập/xóa điểm
+    Ham chinh thuc hien nhap/xoa diem
     
     Args:
-        username: Tài khoản đăng nhập
-        password: Mật khẩu
-        monhoc: Mã môn học
-        excel_file: Đường dẫn file Excel
-        selected_titles: Danh sách cột điểm được chọn
-        status_callback: Callback cập nhật trạng thái
-        progress_callback: Callback cập nhật progress bar (0-100)
-        is_delete_mode: True nếu xóa điểm, False nếu nhập điểm
-        headless: True nếu chạy ẩn browser
-        chrome_path: Đường dẫn tới Chrome/Chromium executable (optional)
-        chromedriver_path: Đường dẫn tới ChromeDriver (optional)
+        username: Tai khoan dang nhap
+        password: Mat khau
+        monhoc: Ma mon hoc
+        excel_file: Duong dan file Excel
+        selected_titles: Danh sach cot diem duoc chon
+        status_callback: Callback cap nhat trang thai
+        progress_callback: Callback cap nhat progress bar (0-100)
+        is_delete_mode: True neu xoa diem, False neu nhap diem
+        headless: True neu chay an browser
+        chrome_path: Duong dan toi Chrome/Chromium (optional, tu dong detect neu de trong)
     """
     action_name = "XÓA" if is_delete_mode else "NHẬP"
     driver = None
@@ -170,8 +209,8 @@ def run_tool(username, password, monhoc, excel_file, selected_titles,
         student_data_list = read_excel_openpyxl(excel_file)
         student_map = {item['IDSV']: item for item in student_data_list}
 
-        # Khởi động browser
-        status_callback("🌏 Đang khởi động trình duyệt...")
+        # Khoi dong browser
+        status_callback("Dang khoi dong trinh duyet...")
         if progress_callback:
             progress_callback(10)
             
@@ -180,22 +219,21 @@ def run_tool(username, password, monhoc, excel_file, selected_titles,
         options.add_argument("--no-sandbox")
         options.add_argument("--disable-dev-shm-usage")
         
-        # Thêm Chrome binary path nếu được chỉ định
-        if chrome_path and os.path.exists(chrome_path):
-            options.binary_location = chrome_path
-            logger.info(f"Sử dụng Chrome từ: {chrome_path}")
+        # Xac dinh Chrome path: custom > auto-detect > de Selenium tu tim
+        browser_path = chrome_path
+        if not browser_path:
+            browser_path = detect_chrome_path()
+        
+        if browser_path and os.path.exists(browser_path):
+            options.binary_location = browser_path
+            logger.info(f"Su dung browser: {browser_path}")
         
         if headless:
             options.add_argument("--headless=new")
-            status_callback("🌏 Đang khởi động trình duyệt (ẩn)...")
+            status_callback("Dang khoi dong trinh duyet (an)...")
         
-        # Khởi tạo driver với service nếu có chromedriver path
-        if chromedriver_path and os.path.exists(chromedriver_path):
-            service = Service(executable_path=chromedriver_path)
-            driver = webdriver.Chrome(service=service, options=options)
-            logger.info(f"Sử dụng ChromeDriver từ: {chromedriver_path}")
-        else:
-            driver = webdriver.Chrome(options=options)
+        # Selenium 4+ tu dong quan ly ChromeDriver
+        driver = webdriver.Chrome(options=options)
         
         driver.set_page_load_timeout(30)
         wait = WebDriverWait(driver, 20)
@@ -362,169 +400,128 @@ def run_tool(username, password, monhoc, excel_file, selected_titles,
                 pass
 
 # =====================================================
-# ============== CỬA SỔ CÀI ĐẶT =======================
+# ============== CUA SO CAI DAT =======================
 # =====================================================
 class SettingsWindow(ctk.CTkToplevel):
     def __init__(self, parent, config, on_save_callback):
         super().__init__(parent)
-        self.title("⚙️ Cài đặt")
-        self.geometry("600x400")
+        
+        self.cfg = config.copy()
+        self.on_save_callback = on_save_callback
+        
+        # Auto detect Chrome
+        self.detected_chrome = detect_chrome_path()
+        
+        self.title("Cai dat trinh duyet")
+        self.geometry("600x350")
         self.resizable(False, False)
+        
+        # Build UI first
+        self._build_ui()
+        
+        # Then configure window
         self.transient(parent)
         self.grab_set()
         
-        self.config = config.copy()
-        self.on_save_callback = on_save_callback
-        
-        # Center window
-        self.update_idletasks()
+        # Center
+        self.update()
         x = parent.winfo_x() + (parent.winfo_width() - 600) // 2
-        y = parent.winfo_y() + (parent.winfo_height() - 400) // 2
-        self.geometry(f"+{x}+{y}")
+        y = parent.winfo_y() + (parent.winfo_height() - 350) // 2
+        self.geometry(f"600x350+{x}+{y}")
         
-        self.create_widgets()
+        self.lift()
+        self.focus_force()
     
-    def create_widgets(self):
-        # Main frame
-        main_frame = ctk.CTkFrame(self, fg_color="transparent")
-        main_frame.pack(fill="both", expand=True, padx=20, pady=20)
+    def _build_ui(self):
+        # Detected Chrome info
+        detect_frame = ctk.CTkFrame(self, fg_color=("gray90", "gray25"))
+        detect_frame.pack(fill="x", padx=20, pady=(15, 10))
         
-        # Title
-        ctk.CTkLabel(
-            main_frame, 
-            text="⚙️ CÀI ĐẶT TRÌNH DUYỆT", 
-            font=ctk.CTkFont(size=18, weight="bold")
-        ).pack(pady=(0, 20))
+        if self.detected_chrome:
+            detect_text = f"Da phat hien: {self.detected_chrome}"
+            detect_color = "green"
+        else:
+            detect_text = "Khong tim thay Chrome/Chromium tu dong!"
+            detect_color = "red"
         
-        # Browser settings frame
-        browser_frame = ctk.CTkFrame(main_frame)
-        browser_frame.pack(fill="x", pady=(0, 15))
-        browser_frame.grid_columnconfigure(1, weight=1)
+        ctk.CTkLabel(detect_frame, text=detect_text, 
+                     text_color=detect_color,
+                     font=ctk.CTkFont(size=11)).pack(padx=15, pady=8)
         
-        ctk.CTkLabel(
-            browser_frame, 
-            text="ĐƯỜNG DẪN TRÌNH DUYỆT", 
-            font=ctk.CTkFont(size=12, weight="bold")
-        ).grid(row=0, column=0, columnspan=3, sticky="w", padx=15, pady=10)
+        # Frame for inputs
+        input_frame = ctk.CTkFrame(self)
+        input_frame.pack(fill="x", padx=20, pady=10)
+        input_frame.grid_columnconfigure(1, weight=1)
         
-        # Chrome path
-        ctk.CTkLabel(browser_frame, text="Chrome/Chromium:").grid(row=1, column=0, sticky="w", padx=15, pady=5)
-        self.chrome_path_entry = ctk.CTkEntry(browser_frame, placeholder_text="Để trống = tự động tìm")
-        self.chrome_path_entry.grid(row=1, column=1, sticky="ew", padx=5, pady=5)
-        if self.config.get("chrome_path"):
-            self.chrome_path_entry.insert(0, self.config["chrome_path"])
+        # Chrome path - custom override
+        ctk.CTkLabel(input_frame, text="Custom Path:").grid(row=0, column=0, sticky="w", padx=10, pady=10)
+        self.chrome_entry = ctk.CTkEntry(input_frame, placeholder_text="De trong = dung path da phat hien")
+        self.chrome_entry.grid(row=0, column=1, sticky="ew", padx=5, pady=10)
+        ctk.CTkButton(input_frame, text="...", width=40, 
+                      command=self._browse_chrome).grid(row=0, column=2, padx=10, pady=10)
         
-        ctk.CTkButton(
-            browser_frame, text="📂", width=40,
-            command=lambda: self.browse_executable(self.chrome_path_entry, "chrome")
-        ).grid(row=1, column=2, padx=(5, 15), pady=5)
-        
-        # ChromeDriver path
-        ctk.CTkLabel(browser_frame, text="ChromeDriver:").grid(row=2, column=0, sticky="w", padx=15, pady=5)
-        self.driver_path_entry = ctk.CTkEntry(browser_frame, placeholder_text="Để trống = tự động tải")
-        self.driver_path_entry.grid(row=2, column=1, sticky="ew", padx=5, pady=5)
-        if self.config.get("chromedriver_path"):
-            self.driver_path_entry.insert(0, self.config["chromedriver_path"])
-        
-        ctk.CTkButton(
-            browser_frame, text="📂", width=40,
-            command=lambda: self.browse_executable(self.driver_path_entry, "driver")
-        ).grid(row=2, column=2, padx=(5, 15), pady=5)
+        # Load saved custom value
+        if self.cfg.get("chrome_path"):
+            self.chrome_entry.insert(0, self.cfg["chrome_path"])
         
         # Help text
-        help_frame = ctk.CTkFrame(main_frame, fg_color=("gray90", "gray20"))
-        help_frame.pack(fill="x", pady=(0, 15))
+        help_text = """HUONG DAN:
+- Neu da phat hien Chrome tu dong, ban co the de trong Custom Path
+- Chi nhap Custom Path neu muon dung browser khac (Brave, Edge...)
+- ChromeDriver se duoc Selenium 4+ tu dong tai ve, khong can cai dat
+
+VD duong dan:
+  Windows: C:\\Program Files\\BraveSoftware\\Brave-Browser\\Application\\brave.exe
+  Linux: /usr/bin/brave-browser
+  macOS: /Applications/Brave Browser.app/Contents/MacOS/Brave Browser"""
         
-        help_text = """💡 HƯỚNG DẪN:
-
-• Chrome/Chromium: Đường dẫn tới file thực thi của trình duyệt
-  - Windows: C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe
-  - macOS: /Applications/Google Chrome.app/Contents/MacOS/Google Chrome
-  - Linux: /usr/bin/google-chrome hoặc /usr/bin/chromium-browser
-
-• ChromeDriver: Để trống, Selenium sẽ tự động tải phiên bản phù hợp
-
-• Nếu bạn dùng Brave, Edge, hoặc Chromium-based browser khác,
-  hãy chỉ định đường dẫn tới file thực thi của browser đó."""
-        
-        ctk.CTkLabel(
-            help_frame, 
-            text=help_text, 
-            justify="left",
-            font=ctk.CTkFont(size=11)
-        ).pack(padx=15, pady=10, anchor="w")
+        help_lbl = ctk.CTkLabel(self, text=help_text, justify="left",
+                                 font=ctk.CTkFont(size=11))
+        help_lbl.pack(fill="x", padx=20, pady=10)
         
         # Buttons
-        btn_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
-        btn_frame.pack(fill="x", pady=(10, 0))
+        btn_frame = ctk.CTkFrame(self, fg_color="transparent")
+        btn_frame.pack(fill="x", padx=20, pady=15)
         
-        ctk.CTkButton(
-            btn_frame, text="❌ Hủy", width=100,
-            fg_color="gray", hover_color="gray40",
-            command=self.destroy
-        ).pack(side="right", padx=5)
-        
-        ctk.CTkButton(
-            btn_frame, text="🔄 Xóa cài đặt", width=120,
-            fg_color="#CC6600", hover_color="#994400",
-            command=self.clear_settings
-        ).pack(side="right", padx=5)
-        
-        ctk.CTkButton(
-            btn_frame, text="✅ Lưu", width=100,
-            fg_color="#009933", hover_color="#007722",
-            command=self.save_settings
-        ).pack(side="right", padx=5)
+        ctk.CTkButton(btn_frame, text="Luu", width=100,
+                      fg_color="green", command=self._save).pack(side="right", padx=5)
+        ctk.CTkButton(btn_frame, text="Huy", width=100,
+                      fg_color="gray", command=self.destroy).pack(side="right", padx=5)
+        ctk.CTkButton(btn_frame, text="Xoa cai dat", width=100,
+                      fg_color="orange", command=self._clear).pack(side="right", padx=5)
     
-    def browse_executable(self, entry_widget, file_type):
+    def _browse_chrome(self):
         if sys.platform == "win32":
-            filetypes = [("Executable", "*.exe"), ("All files", "*.*")]
+            ft = [("Executable", "*.exe"), ("All", "*.*")]
         else:
-            filetypes = [("All files", "*")]
-        
-        if file_type == "chrome":
-            title = "Chọn Chrome/Chromium executable"
-        else:
-            title = "Chọn ChromeDriver executable"
-        
-        filename = filedialog.askopenfilename(title=title, filetypes=filetypes)
-        if filename:
-            entry_widget.delete(0, "end")
-            entry_widget.insert(0, filename)
+            ft = [("All", "*")]
+        f = filedialog.askopenfilename(title="Chon Chrome/Browser", filetypes=ft)
+        if f:
+            self.chrome_entry.delete(0, "end")
+            self.chrome_entry.insert(0, f)
     
-    def clear_settings(self):
-        self.chrome_path_entry.delete(0, "end")
-        self.driver_path_entry.delete(0, "end")
-        self.config.pop("chrome_path", None)
-        self.config.pop("chromedriver_path", None)
-        messagebox.showinfo("Đã xóa", "Đã xóa cài đặt đường dẫn trình duyệt!")
+    def _clear(self):
+        self.chrome_entry.delete(0, "end")
+        self.cfg.pop("chrome_path", None)
+        messagebox.showinfo("OK", "Da xoa cai dat! Se dung Chrome tu dong.")
     
-    def save_settings(self):
-        chrome_path = self.chrome_path_entry.get().strip()
-        driver_path = self.driver_path_entry.get().strip()
+    def _save(self):
+        cp = self.chrome_entry.get().strip()
         
-        # Validate paths
-        if chrome_path and not os.path.exists(chrome_path):
-            messagebox.showerror("Lỗi", f"Chrome path không tồn tại:\n{chrome_path}")
+        if cp and not os.path.exists(cp):
+            messagebox.showerror("Loi", f"Path khong ton tai:\n{cp}")
             return
         
-        if driver_path and not os.path.exists(driver_path):
-            messagebox.showerror("Lỗi", f"ChromeDriver path không tồn tại:\n{driver_path}")
-            return
-        
-        # Save to config
-        if chrome_path:
-            self.config["chrome_path"] = chrome_path
+        if cp:
+            self.cfg["chrome_path"] = cp
         else:
-            self.config.pop("chrome_path", None)
+            self.cfg.pop("chrome_path", None)
         
-        if driver_path:
-            self.config["chromedriver_path"] = driver_path
-        else:
-            self.config.pop("chromedriver_path", None)
+        # Remove old chromedriver_path if exists
+        self.cfg.pop("chromedriver_path", None)
         
-        self.on_save_callback(self.config)
-        messagebox.showinfo("Thành công", "Đã lưu cài đặt!")
+        self.on_save_callback(self.cfg)
+        messagebox.showinfo("OK", "Da luu cai dat!")
         self.destroy()
 
 # =====================================================
@@ -859,8 +856,7 @@ class App(ctk.CTk):
                 selected, self.update_status, self.update_progress,
                 is_delete_mode=is_delete,
                 headless=self.headless_var.get(),
-                chrome_path=self.config.get("chrome_path"),
-                chromedriver_path=self.config.get("chromedriver_path")
+                chrome_path=self.config.get("chrome_path")
             )
         finally:
             self.set_buttons_state("normal")
