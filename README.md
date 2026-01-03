@@ -1,4 +1,4 @@
-# 🎓 UDA Auto Grader Pro v3.3
+# 🎓 UDA Auto Grader Pro v3.5
 
 Tool tự động nhập điểm cho hệ thống quản lý điểm của Đại học Đông Á (UDA).
 
@@ -10,18 +10,44 @@ Tool tự động nhập điểm cho hệ thống quản lý điểm của Đạ
 - ✅ Hỗ trợ nhiều loại điểm: KTTX, CCAN, GHP, TDNH, THTN, TLDA, THI1
 - ✅ Giao diện đẹp với CustomTkinter
 - ✅ Hỗ trợ Windows, macOS, Linux
+- ✅ **Cấu hình browser tùy chỉnh** (Chrome, Brave, Edge, Chromium...)
+- ✅ Chế độ chạy ẩn (Headless mode)
+- ✅ Nhớ tài khoản và cấu hình
 
 ## 🛠️ Yêu cầu hệ thống
 
-- Python 3.9+ (để build)
-- Google Chrome hoặc Chromium browser (để chạy)
-- ChromeDriver (tự động tải khi chạy Selenium)
+- **Python 3.9+** (để build)
+- **Trình duyệt Chromium-based**:
+  - Google Chrome (khuyến nghị)
+  - Chromium
+  - Microsoft Edge
+  - Brave Browser
+  - Vivaldi
+- **ChromeDriver** (tự động tải khi chạy Selenium 4+)
+
+---
+
+## 🆕 Tính năng mới v3.5
+
+### ⚙️ Cài đặt Browser tùy chỉnh
+
+Click nút **"⚙️ Cài đặt"** ở góc trên phải để cấu hình:
+
+- **Chrome/Chromium Path**: Đường dẫn tới file thực thi của browser
+- **ChromeDriver Path**: Đường dẫn tới ChromeDriver (tùy chọn)
+
+#### Đường dẫn phổ biến:
+
+| Browser  | Windows                                                              | macOS                                                            | Linux                       |
+| -------- | -------------------------------------------------------------------- | ---------------------------------------------------------------- | --------------------------- |
+| Chrome   | `C:\Program Files\Google\Chrome\Application\chrome.exe`              | `/Applications/Google Chrome.app/Contents/MacOS/Google Chrome`   | `/usr/bin/google-chrome`    |
+| Brave    | `C:\Program Files\BraveSoftware\Brave-Browser\Application\brave.exe` | `/Applications/Brave Browser.app/Contents/MacOS/Brave Browser`   | `/usr/bin/brave-browser`    |
+| Edge     | `C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe`       | `/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge` | `/usr/bin/microsoft-edge`   |
+| Chromium | -                                                                    | `/Applications/Chromium.app/Contents/MacOS/Chromium`             | `/usr/bin/chromium-browser` |
 
 ---
 
 ## 🚀 Build Cross-Platform với GitHub Actions (Khuyến nghị)
-
-Cách đơn giản nhất để build cho cả 3 hệ điều hành từ 1 lần push code:
 
 ### Bước 1: Push code lên GitHub
 
@@ -35,133 +61,90 @@ git push -u origin main
 
 ### Bước 2: GitHub tự động build
 
-Sau khi push, GitHub Actions sẽ tự động:
+Sau khi push, GitHub Actions sẽ tự động build cho:
 
-- ✅ Build cho **Windows** (`.exe`)
-- ✅ Build cho **macOS**
-- ✅ Build cho **Linux**
+- ✅ **Windows** (`.exe`)
+- ✅ **macOS**
+- ✅ **Linux**
 
 ### Bước 3: Download artifacts
 
-1. Vào tab **Actions** trên GitHub repository
+1. Vào tab **Actions** trên GitHub
 2. Click vào workflow run mới nhất
-3. Scroll xuống phần **Artifacts**
-4. Download file cho từng hệ điều hành:
-   - `UDA_Auto_Grader-windows-x64.exe`
-   - `UDA_Auto_Grader-macos-x64`
-   - `UDA_Auto_Grader-linux-x64`
+3. Download file từ phần **Artifacts**
 
-### Bước 4: Tạo Release (Optional)
-
-Để tự động tạo Release với tất cả các file:
+### Bước 4: Tạo Release
 
 ```bash
-git tag v3.3.0
-git push origin v3.3.0
+git tag v3.5.0
+git push origin v3.5.0
 ```
 
 ---
 
 ## 🔧 Build thủ công (Local)
 
-### Yêu cầu trước khi build
+### Yêu cầu
 
 #### Ubuntu/Debian
 
 ```bash
-sudo apt-get install -y python3-tk
+sudo apt-get install -y python3-tk upx-ucl
 ```
 
 #### macOS
 
 ```bash
-# Thường đã có sẵn, nếu thiếu:
-brew install python-tk@3.11
-```
-
-#### Windows
-
-- Tkinter thường được cài sẵn với Python từ python.org
-
-### Chuẩn bị môi trường
-
-#### Linux/macOS
-
-```bash
-# Tạo virtual environment
-python3 -m venv .venv
-
-# Kích hoạt venv
-source .venv/bin/activate
-
-# Cài đặt dependencies
-pip install -r requirements.txt
+brew install upx
 ```
 
 #### Windows
 
 ```cmd
-# Tạo virtual environment
-python -m venv .venv
-
-# Kích hoạt venv
-.venv\Scripts\activate
-
-# Cài đặt dependencies
-pip install -r requirements.txt
+choco install upx -y
 ```
 
-### Build ứng dụng
-
-#### Cách 1: Sử dụng Python script
+### Build
 
 ```bash
+# Tạo và kích hoạt venv
+python3 -m venv .venv
+source .venv/bin/activate  # Linux/macOS
+# hoặc .venv\Scripts\activate trên Windows
+
+# Cài dependencies
+pip install -r requirements.txt
+
+# Build
 python build.py
 ```
 
-#### Cách 2: Sử dụng shell script
+### Kết quả
 
-**Linux/macOS:**
-
-```bash
-chmod +x build.sh
-./build.sh
-```
-
-**Windows:**
-
-```cmd
-build.bat
-```
-
-### Kết quả build
-
-| Platform | Output File                | Kích thước |
-| -------- | -------------------------- | ---------- |
-| Windows  | `dist/UDA_Auto_Grader.exe` | ~22 MB     |
-| macOS    | `dist/UDA_Auto_Grader`     | ~22 MB     |
-| Linux    | `dist/UDA_Auto_Grader`     | ~22 MB     |
+| Platform | Output                     | Size      |
+| -------- | -------------------------- | --------- |
+| Windows  | `dist/UDA_Auto_Grader.exe` | ~12-15 MB |
+| macOS    | `dist/UDA_Auto_Grader`     | ~12-15 MB |
+| Linux    | `dist/UDA_Auto_Grader`     | ~12-15 MB |
 
 ---
 
 ## 🎯 Hướng dẫn sử dụng
 
-1. **Chạy ứng dụng** từ thư mục `dist/`
+1. **Chạy ứng dụng**
 
-2. **Nhập thông tin đăng nhập**:
+2. **Cấu hình browser** (nếu cần):
+
+   - Click ⚙️ **Cài đặt**
+   - Chọn đường dẫn Chrome/Browser
+
+3. **Nhập thông tin**:
 
    - Tài khoản giảng viên
    - Mật khẩu
+   - Mã môn học (copy từ web UDA)
 
-3. **Chọn môn học**:
-
-   - Copy value môn học từ trang nhập điểm UDA
-   - Ví dụ: `Kỹ năng số (1tc)/OK//93190/7481/KL24A`
-
-4. **Chọn file Excel**:
-
-   - Sử dụng file mẫu hoặc tạo file riêng
-   - File phải có cột `IDSV` (bắt buộc)
+4. **Chọn file Excel** (phải có cột IDSV)
 
 5. **Chọn cột điểm** cần nhập/xóa
 
@@ -188,27 +171,16 @@ build.bat
 
 ```
 Nhap diem/
-├── .github/
-│   └── workflows/
-│       └── build.yml           # GitHub Actions workflow
-├── tool_nhap_diem_uda.py       # Source code chính
-├── template.xlsx               # File mẫu Excel
-├── requirements.txt            # Dependencies
-├── build.py                    # Script build (Python)
-├── build.sh                    # Script build (Linux/macOS)
-├── build.bat                   # Script build (Windows)
-├── .gitignore                  # Git ignore file
-└── README.md                   # Hướng dẫn này
+├── .github/workflows/build.yml  # GitHub Actions
+├── tool_nhap_diem_uda.py        # Source code chính
+├── template.xlsx                # File mẫu Excel
+├── requirements.txt             # Dependencies
+├── build.py                     # Script build
+├── build.sh                     # Build script (Linux/macOS)
+├── build.bat                    # Build script (Windows)
+├── .gitignore
+└── README.md
 ```
-
----
-
-## ⚠️ Lưu ý quan trọng
-
-1. **Chrome/Chromium**: Đảm bảo đã cài đặt Google Chrome hoặc Chromium
-2. **Kết nối mạng**: Cần kết nối internet để truy cập UDA
-3. **Điểm hợp lệ**: Điểm phải là số từ 0 đến 10
-4. **Backup**: Luôn backup dữ liệu trước khi thao tác
 
 ---
 
@@ -224,15 +196,31 @@ sudo apt-get install python3-tk
 brew install python-tk@3.11
 ```
 
-### Lỗi "ChromeDriver not found"
+### Lỗi "WebDriver" / "Chrome not found"
+
+1. Click ⚙️ **Cài đặt**
+2. Chọn đường dẫn tới Chrome/Browser của bạn
+3. Lưu và thử lại
+
+### Lỗi "ChromeDriver version mismatch"
 
 - Selenium 4+ tự động quản lý ChromeDriver
-- Đảm bảo Chrome đã được cài đặt
+- Nếu vẫn lỗi, tải ChromeDriver phù hợp và cấu hình trong Cài đặt
 
-### Build thất bại
+### Muốn dùng Brave/Edge thay Chrome
 
-- Đảm bảo đã kích hoạt virtual environment
-- Kiểm tra đã cài đủ dependencies: `pip install -r requirements.txt`
+1. Click ⚙️ **Cài đặt**
+2. Nhập đường dẫn tới Brave/Edge executable
+3. Lưu
+
+---
+
+## 📂 Vị trí lưu cấu hình
+
+Cấu hình được lưu tại:
+
+- **Windows**: `C:\Users\<username>\.uda_grader\config.json`
+- **macOS/Linux**: `~/.uda_grader/config.json`
 
 ---
 

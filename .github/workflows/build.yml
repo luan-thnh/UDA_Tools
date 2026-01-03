@@ -1,4 +1,4 @@
-name: Build Cross-Platform
+name: Build and Release
 
 on:
   push:
@@ -41,7 +41,7 @@ jobs:
           python-version: '3.11'
 
       # Install tkinter - Linux
-      - name: Install tkinter (Linux)
+      - name: Install system dependencies (Linux)
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
@@ -57,7 +57,7 @@ jobs:
         if: runner.os == 'Windows'
         run: choco install upx -y
 
-      - name: Install dependencies
+      - name: Install Python dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
@@ -65,37 +65,90 @@ jobs:
       - name: Build with PyInstaller
         run: python build.py
 
+      # Rename artifact với tên rõ ràng
+      - name: Rename artifact (Linux/macOS)
+        if: runner.os != 'Windows'
+        run: |
+          mv dist/${{ matrix.artifact_name }} dist/${{ matrix.asset_name }}
+
+      - name: Rename artifact (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          move dist\${{ matrix.artifact_name }} dist\${{ matrix.asset_name }}
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.asset_name }}
-          path: dist/${{ matrix.artifact_name }}
+          path: dist/${{ matrix.asset_name }}
           retention-days: 30
 
-  # Tạo Release khi push tag
+  # ============================================
+  # TẠO RELEASE KHI PUSH TAG
+  # ============================================
   release:
     needs: build
     runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/')
+    if: startsWith(github.ref, 'refs/tags/v')
+    permissions:
+      contents: write
 
     steps:
-      - name: Download all artifacts
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download Linux artifact
         uses: actions/download-artifact@v4
         with:
-          path: artifacts
+          name: UDA_Auto_Grader-linux-x64
+          path: release-files
 
-      - name: Display structure
-        run: ls -R artifacts
+      - name: Download Windows artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: UDA_Auto_Grader-windows-x64.exe
+          path: release-files
+
+      - name: Download macOS artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: UDA_Auto_Grader-macos-x64
+          path: release-files
+
+      - name: List release files
+        run: ls -la release-files/
 
       - name: Create Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
-          files: |
-            artifacts/UDA_Auto_Grader-linux-x64/*
-            artifacts/UDA_Auto_Grader-windows-x64.exe/*
-            artifacts/UDA_Auto_Grader-macos-x64/*
+          name: UDA Auto Grader ${{ github.ref_name }}
+          body: |
+            ## 🎓 UDA Auto Grader ${{ github.ref_name }}
+
+            Tool tự động nhập điểm cho hệ thống quản lý điểm của Đại học Đông Á (UDA).
+
+            ### 📥 Download
+
+            | Platform | File |
+            |----------|------|
+            | Windows | `UDA_Auto_Grader-windows-x64.exe` |
+            | macOS | `UDA_Auto_Grader-macos-x64` |
+            | Linux | `UDA_Auto_Grader-linux-x64` |
+
+            ### ⚠️ Lưu ý
+            - Cần có Chrome, Brave, Edge hoặc Chromium browser đã cài đặt
+            - Có thể cấu hình đường dẫn browser trong phần **Cài đặt**
+
+            ### 🆕 Tính năng mới
+            - ⚙️ Cài đặt browser tùy chỉnh (hỗ trợ Brave, Edge, Chromium...)
+            - 🔇 Chế độ chạy ẩn (Headless)
+            - 💾 Nhớ tài khoản và cấu hình
+            - 📊 Thanh tiến trình
           draft: false
           prerelease: false
-          generate_release_notes: true
+          files: |
+            release-files/UDA_Auto_Grader-linux-x64
+            release-files/UDA_Auto_Grader-windows-x64.exe
+            release-files/UDA_Auto_Grader-macos-x64
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
