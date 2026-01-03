@@ -1,0 +1,90 @@
+name: Build Cross-Platform
+
+on:
+  push:
+    branches: [main, master]
+    tags:
+      - 'v*'
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch: # Cho phép chạy thủ công
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            name: Linux
+            artifact_name: UDA_Auto_Grader
+            asset_name: UDA_Auto_Grader-linux-x64
+          - os: windows-latest
+            name: Windows
+            artifact_name: UDA_Auto_Grader.exe
+            asset_name: UDA_Auto_Grader-windows-x64.exe
+          - os: macos-latest
+            name: macOS
+            artifact_name: UDA_Auto_Grader
+            asset_name: UDA_Auto_Grader-macos-x64
+
+    runs-on: ${{ matrix.os }}
+    name: Build for ${{ matrix.name }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      # Linux specific - Install tkinter
+      - name: Install tkinter (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3-tk
+
+      - name: Build with PyInstaller
+        run: python build.py
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.asset_name }}
+          path: dist/${{ matrix.artifact_name }}
+          retention-days: 30
+
+  # Job để tạo Release khi push tag
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Display structure of downloaded files
+        run: ls -R artifacts
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            artifacts/UDA_Auto_Grader-linux-x64/*
+            artifacts/UDA_Auto_Grader-windows-x64.exe/*
+            artifacts/UDA_Auto_Grader-macos-x64/*
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
