@@ -9,6 +9,12 @@ import sys
 import os
 import platform
 import shutil
+import io
+
+# Fix encoding cho Windows
+if sys.platform == "win32":
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
+    sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace')
 
 # =====================================================
 # =============== CẤU HÌNH BUILD ======================
@@ -16,7 +22,7 @@ import shutil
 
 APP_NAME = "UDA_Auto_Grader"
 MAIN_SCRIPT = "tool_nhap_diem_uda.py"
-VERSION = "3.3.0"
+VERSION = "3.4.0"
 
 # Icon files (optional - create these if you have icons)
 ICON_WIN = "icon.ico"      # Windows icon
@@ -43,11 +49,11 @@ HIDDEN_IMPORTS = [
     "selenium.webdriver.support.expected_conditions",
 ]
 
-# Các module không cần thiết - loại bỏ để giảm size
+# Cac module khong can thiet - loai bo de giam size
 EXCLUDES = [
     # Test frameworks
     "pytest", "unittest", "doctest", "test",
-    # Không cần các browser khác
+    # Khong can cac browser khac
     "selenium.webdriver.firefox",
     "selenium.webdriver.edge", 
     "selenium.webdriver.safari",
@@ -55,11 +61,11 @@ EXCLUDES = [
     "selenium.webdriver.remote",
     "selenium.webdriver.webkitgtk",
     "selenium.webdriver.wpewebkit",
-    # Không cần debugging tools
+    # Khong can debugging tools
     "pdb", "profile", "cProfile",
-    # Email/network không cần
+    # Email/network khong can
     "email", "html.parser", "ftplib", "imaplib", "smtplib",
-    # Packages không sử dụng
+    # Packages khong su dung
     "numpy", "pandas", "matplotlib", "scipy",
     "PIL.ImageQt", "PIL.ImageTk",
     "asyncio", "concurrent",
@@ -67,22 +73,22 @@ EXCLUDES = [
     "xmlrpc", "curses",
 ]
 
-# Sử dụng UPX để nén (nếu có)
+# Su dung UPX de nen (neu co)
 USE_UPX = True
 
 # =====================================================
-# =============== HÀM HỖ TRỢ ==========================
+# =============== HAM HO TRO ==========================
 # =====================================================
 
 def get_os_name():
-    """Lấy tên hệ điều hành"""
+    """Lay ten he dieu hanh"""
     system = platform.system().lower()
     if system == "darwin":
         return "macos"
     return system
 
 def get_icon_path():
-    """Lấy đường dẫn icon phù hợp với OS"""
+    """Lay duong dan icon phu hop voi OS"""
     system = platform.system().lower()
     if system == "windows" and os.path.exists(ICON_WIN):
         return ICON_WIN
@@ -93,58 +99,59 @@ def get_icon_path():
     return None
 
 def check_package_installed(package_name):
-    """Kiểm tra package đã được cài đặt bằng pip show"""
+    """Kiem tra package da duoc cai dat bang pip show"""
     result = subprocess.run(
         [sys.executable, "-m", "pip", "show", package_name],
         capture_output=True,
-        text=True
+        text=True,
+        check=False
     )
     return result.returncode == 0
 
 def check_dependencies():
-    """Kiểm tra các dependencies cần thiết"""
-    print("📦 Kiểm tra dependencies...")
+    """Kiem tra cac dependencies can thiet"""
+    print("[*] Checking dependencies...")
     
-    # Check PyInstaller (có thể import được)
+    # Check PyInstaller
     try:
         import PyInstaller
-        print(f"   ✅ PyInstaller version: {PyInstaller.__version__}")
+        print(f"    [OK] PyInstaller version: {PyInstaller.__version__}")
     except ImportError:
-        print("   ❌ PyInstaller chưa được cài đặt!")
-        print("   💡 Chạy: pip install pyinstaller")
+        print("    [X] PyInstaller not installed!")
+        print("    [!] Run: pip install pyinstaller")
         return False
     
-    # Check các package khác bằng pip show (tránh lỗi import GUI)
+    # Check cac package khac bang pip show (tranh loi import GUI)
     packages = ["customtkinter", "openpyxl", "selenium"]
     
     for pkg in packages:
         if check_package_installed(pkg):
-            print(f"   ✅ {pkg} OK")
+            print(f"    [OK] {pkg}")
         else:
-            print(f"   ❌ {pkg} chưa được cài đặt!")
+            print(f"    [X] {pkg} not installed!")
             return False
     
     return True
 
 def check_files():
-    """Kiểm tra các file cần thiết"""
-    print("\n📁 Kiểm tra files...")
+    """Kiem tra cac file can thiet"""
+    print("\n[*] Checking files...")
     
     if not os.path.exists(MAIN_SCRIPT):
-        print(f"   ❌ Không tìm thấy file chính: {MAIN_SCRIPT}")
+        print(f"    [X] Main script not found: {MAIN_SCRIPT}")
         return False
-    print(f"   ✅ File chính: {MAIN_SCRIPT}")
+    print(f"    [OK] Main script: {MAIN_SCRIPT}")
     
     # Check template file
     if not os.path.exists("template.xlsx"):
-        print("   ⚠️  Không tìm thấy template.xlsx - Sẽ bỏ qua file này")
+        print("    [!] template.xlsx not found - will be skipped")
     else:
-        print("   ✅ Template file: template.xlsx")
+        print("    [OK] Template file: template.xlsx")
     
     return True
 
 def get_customtkinter_path():
-    """Lấy đường dẫn thư viện CustomTkinter bằng pip show"""
+    """Lay duong dan thu vien CustomTkinter bang pip show"""
     result = subprocess.run(
         [sys.executable, "-m", "pip", "show", "customtkinter"],
         capture_output=True,
@@ -159,8 +166,8 @@ def get_customtkinter_path():
     return None
 
 def clean_build():
-    """Xóa các folder build cũ"""
-    print("\n🧹 Dọn dẹp build cũ...")
+    """Xoa cac folder build cu"""
+    print("\n[*] Cleaning old builds...")
     
     folders_to_clean = ["build", "dist", f"{APP_NAME}.spec"]
     for folder in folders_to_clean:
@@ -169,45 +176,45 @@ def clean_build():
                 shutil.rmtree(folder)
             else:
                 os.remove(folder)
-            print(f"   🗑️  Đã xóa: {folder}")
+            print(f"    [OK] Removed: {folder}")
 
 def build_app():
-    """Build ứng dụng với PyInstaller"""
+    """Build ung dung voi PyInstaller"""
     os_name = get_os_name()
-    print(f"\n🔨 Bắt đầu build cho {os_name.upper()}...")
-    print(f"   📌 Phiên bản: {VERSION}")
+    print(f"\n[*] Building for {os_name.upper()}...")
+    print(f"    Version: {VERSION}")
     
     # Base command
     cmd = [
         sys.executable, "-m", "PyInstaller",
         "--name", APP_NAME,
-        "--onefile",            # Đóng gói thành 1 file duy nhất
-        "--windowed",           # Không hiện console window
-        "--clean",              # Xóa cache cũ
-        "--noconfirm",          # Không hỏi xác nhận
-        "--strip",              # Strip debug symbols (giảm size)
+        "--onefile",            # Dong goi thanh 1 file duy nhat
+        "--windowed",           # Khong hien console window
+        "--clean",              # Xoa cache cu
+        "--noconfirm",          # Khong hoi xac nhan
+        "--strip",              # Strip debug symbols (giam size)
     ]
     
-    # Thêm UPX nếu được bật và có sẵn
+    # Them UPX neu duoc bat va co san
     if USE_UPX:
         if shutil.which("upx"):
-            print("   🗜️  UPX compression: ENABLED")
+            print("    [OK] UPX compression: ENABLED")
         else:
             cmd.append("--noupx")
-            print("   ⚠️  UPX không được cài đặt, bỏ qua compression")
+            print("    [!] UPX not installed, skipping compression")
     else:
         cmd.append("--noupx")
     
-    # Add excludes để giảm size
+    # Add excludes de giam size
     for exc in EXCLUDES:
         cmd.extend(["--exclude-module", exc])
-    print(f"   🚫 Loại bỏ {len(EXCLUDES)} modules không cần thiết")
+    print(f"    [OK] Excluding {len(EXCLUDES)} unnecessary modules")
     
     # Add icon if exists
     icon_path = get_icon_path()
     if icon_path:
         cmd.extend(["--icon", icon_path])
-        print(f"   🎨 Icon: {icon_path}")
+        print(f"    [OK] Icon: {icon_path}")
     
     # Add hidden imports
     for imp in HIDDEN_IMPORTS:
@@ -217,18 +224,18 @@ def build_app():
     ctk_path = get_customtkinter_path()
     if ctk_path:
         cmd.extend(["--add-data", f"{ctk_path}{os.pathsep}customtkinter"])
-        print(f"   📚 CustomTkinter path: {ctk_path}")
+        print(f"    [OK] CustomTkinter path: {ctk_path}")
     
     # Add data files
     for src, dest in DATA_FILES:
         if os.path.exists(src):
             cmd.extend(["--add-data", f"{src}{os.pathsep}{dest}"])
-            print(f"   📄 Data file: {src} -> {dest}")
+            print(f"    [OK] Data file: {src} -> {dest}")
     
     # Add main script
     cmd.append(MAIN_SCRIPT)
     
-    print("\n⏳ Đang build... (có thể mất vài phút)")
+    print("\n[*] Building... (this may take a few minutes)")
     
     # Run PyInstaller
     result = subprocess.run(cmd, capture_output=False, check=False)
@@ -245,37 +252,37 @@ def build_app():
         if os.path.exists(output_file.replace(".app", "")):
             output_file = output_file.replace(".app", "")
         
-        print(f"\n✅ BUILD THÀNH CÔNG!")
-        print(f"   📦 Output: {os.path.abspath(output_file)}")
+        print(f"\n[SUCCESS] BUILD COMPLETED!")
+        print(f"    Output: {os.path.abspath(output_file)}")
         
         # Get file size
         if os.path.exists(output_file):
             size_mb = os.path.getsize(output_file) / (1024 * 1024)
-            print(f"   📊 Kích thước: {size_mb:.2f} MB")
+            print(f"    Size: {size_mb:.2f} MB")
         
         return True
     else:
-        print(f"\n❌ BUILD THẤT BẠI!")
-        print(f"   Return code: {result.returncode}")
+        print(f"\n[FAILED] BUILD FAILED!")
+        print(f"    Return code: {result.returncode}")
         return False
 
 def main():
     """Main function"""
     print("=" * 60)
-    print(f"🚀 UDA AUTO GRADER - BUILD TOOL")
-    print(f"   Version: {VERSION}")
-    print(f"   OS: {platform.system()} {platform.release()}")
-    print(f"   Python: {platform.python_version()}")
+    print("UDA AUTO GRADER - BUILD TOOL")
+    print(f"    Version: {VERSION}")
+    print(f"    OS: {platform.system()} {platform.release()}")
+    print(f"    Python: {platform.python_version()}")
     print("=" * 60)
     
     # Check all requirements
     if not check_dependencies():
-        print("\n❌ Vui lòng cài đặt đầy đủ dependencies!")
-        print("   Chạy: pip install -r requirements.txt")
+        print("\n[X] Please install all dependencies!")
+        print("    Run: pip install -r requirements.txt")
         sys.exit(1)
     
     if not check_files():
-        print("\n❌ Thiếu file cần thiết!")
+        print("\n[X] Missing required files!")
         sys.exit(1)
     
     # Clean old builds
@@ -286,15 +293,15 @@ def main():
     
     if success:
         print("\n" + "=" * 60)
-        print("🎉 HOÀN TẤT!")
+        print("BUILD COMPLETED SUCCESSFULLY!")
         print("=" * 60)
-        print("\n📋 HƯỚNG DẪN SỬ DỤNG:")
-        print("   1. Tìm file trong thư mục 'dist/'")
-        print("   2. Copy file đến nơi cần sử dụng")
-        print("   3. Chạy chương trình")
-        print("\n⚠️  LƯU Ý:")
-        print("   - Cần có Chrome/Chromium browser đã cài đặt")
-        print("   - ChromeDriver sẽ tự động được tải khi chạy")
+        print("\nUsage:")
+        print("    1. Find the executable in 'dist/' folder")
+        print("    2. Copy to desired location")
+        print("    3. Run the application")
+        print("\nNote:")
+        print("    - Chrome/Chromium browser must be installed")
+        print("    - ChromeDriver will be downloaded automatically")
     else:
         sys.exit(1)
 
