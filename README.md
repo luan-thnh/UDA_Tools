@@ -1,51 +1,87 @@
-# 🚀 UDA Tools Pro v4.0
+# 🚀 UDA Tools Pro v5.0
 
-All-in-one tool suite cho giảng viên Đại học Đông Á (UDA).
+<div align="center">
 
-## ✨ Tính năng
+![Version](https://img.shields.io/badge/version-5.0.0-blue.svg)
+![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg)
+![Python](https://img.shields.io/badge/python-3.8+-green.svg)
+![License](https://img.shields.io/badge/license-MIT-orange.svg)
 
-### Tab 1: Nhập Điểm UDA
+**All-in-one automation tool cho giảng viên Đại học Đông Á (UDA)**
 
-- ✅ Tự động đăng nhập vào hệ thống UDA
-- ✅ Nhập/Xóa điểm hàng loạt từ file Excel
-- ✅ Hỗ trợ: KTTX, CCAN, GHP, TDNH, THTN, TLDA, THI1
-- ✅ Auto-detect Chrome/Chromium/Brave/Edge
-- ✅ Chế độ Headless (chạy ẩn)
-- ✅ Nhớ tài khoản
+[📥 Download](#-cài-đặt) • [✨ Features](#-tính-năng) • [📖 Docs](#-hướng-dẫn-sử-dụng) • [🔧 Build](#-build)
 
-### Tab 2: HRM Auto Check-in
-
-- ✅ Tự động check-in công việc hàng ngày
-- ✅ **Random nội dung** từ danh sách (mỗi ngày khác nhau!)
-- ✅ Hỗ trợ **Cronjob** (Ubuntu, Windows, macOS)
-- ✅ Xem **lịch sử** hoạt động
-- ✅ Chế độ Headless
+</div>
 
 ---
 
-## 🛠️ Yêu cầu
+## 🎯 Giới thiệu
 
-- **Trình duyệt**: Chrome, Brave, Edge, hoặc Chromium
-- **ChromeDriver**: Tự động quản lý bởi Selenium 4+
+UDA Tools Pro là bộ công cụ tự động hóa giúp giảng viên:
+
+- **Nhập điểm hàng loạt** vào hệ thống UDA từ file Excel
+- **Tự động check-in HRM** công việc hàng ngày với nội dung random
+- **Lên lịch tự động** chạy hàng ngày (Cronjob)
+
+---
+
+## ✨ Tính năng
+
+### 📊 Tab 1: Nhập Điểm UDA
+
+| Tính năng            | Mô tả                                   |
+| -------------------- | --------------------------------------- |
+| 🔐 **Auto Login**    | Tự động đăng nhập hệ thống UDA          |
+| 📥 **Import/Delete** | Nhập/Xóa điểm hàng loạt từ Excel        |
+| 📋 **Multi-column**  | KTTX, CCAN, GHP, TDNH, THTN, TLDA, THI1 |
+| 🌐 **Auto-detect**   | Chrome, Brave, Edge, Chromium           |
+| 👁️ **Headless**      | Chạy ẩn không hiện trình duyệt          |
+| 💾 **Save config**   | Nhớ tài khoản, mã môn                   |
+| 📄 **Template**      | Tải file Excel mẫu                      |
+
+### ⏰ Tab 2: HRM Auto Check-in
+
+| Tính năng             | Mô tả                                  |
+| --------------------- | -------------------------------------- |
+| ✅ **Auto check-in**  | Tự động điền công việc hàng ngày       |
+| 🎲 **Random content** | Mỗi ngày nội dung khác nhau            |
+| 📅 **Cronjob**        | Lên lịch tự động (Windows/macOS/Linux) |
+| 📆 **Select days**    | Chọn ngày chạy trong tuần              |
+| 📜 **History**        | Xem lịch sử hoạt động                  |
+
+---
+
+## 🖥️ Screenshots
+
+<div align="center">
+
+![UDA Tools Pro Screenshot](assets/screenshot_nhapdiem.png)
+![UDA Tools Pro Screenshot](assets/screenshot_hrmauto.png)
+
+_Giao diện chính của UDA Tools Pro v5.0_
+
+</div>
 
 ---
 
 ## 📥 Cài đặt
 
-### Tải từ Releases
+### 🔹 Tải từ Releases (Khuyến nghị)
 
-Download file phù hợp với OS:
+| Platform   | Download                        |
+| ---------- | ------------------------------- |
+| 🪟 Windows | `UDA_Tools_Pro-windows-x64.exe` |
+| 🍎 macOS   | `UDA_Tools_Pro-macos-x64`       |
+| 🐧 Linux   | `UDA_Tools_Pro-linux-x64`       |
 
-- **Windows**: `UDA_Tools_Pro-windows-x64.exe`
-- **macOS**: `UDA_Tools_Pro-macos-x64`
-- **Linux**: `UDA_Tools_Pro-linux-x64`
+👉 [**Download Latest Release**](https://github.com/luan-thnh/UDA_Tools/releases/latest)
 
-### Chạy từ source
+### 🔹 Chạy từ Source
 
 ```bash
 # Clone repo
-git clone https://github.com/luan-thnh/UDA_Auto_Grader.git
-cd UDA_Auto_Grader
+git clone https://github.com/luan-thnh/UDA_Tools.git
+cd UDA_Tools
 
 # Cài dependencies
 pip install -r requirements.txt
@@ -56,149 +92,147 @@ python uda_tools.py
 
 ---
 
-## 🔄 Cronjob - Tự động chạy hàng ngày
+## 📖 Hướng dẫn sử dụng
 
-### 🐧 Ubuntu/Linux
+### 1️⃣ Nhập điểm UDA
 
-```bash
-# Mở crontab
-crontab -e
+1. Nhập **tài khoản/mật khẩu** UDA
+2. Paste **mã môn học** từ website (VD: `Kỹ năng số (1tc)/OK//93190/7481/KL24A`)
+3. Chọn file Excel hoặc **Tải mẫu** để tạo file mới
+4. Chọn các cột điểm cần nhập
+5. Click **NHẬP ĐIỂM**
 
-# Thêm dòng (chạy lúc 8:00 sáng)
-0 8 * * * /usr/bin/python3 /path/to/uda_tools.py --hrm-auto
+### 2️⃣ HRM Auto Check-in
 
-# Kiểm tra
-crontab -l
-```
+1. Nhập **email/mật khẩu** HRM
+2. Nhập danh sách **nội dung công việc** (mỗi dòng 1 nội dung)
+3. Click **CHẠY NGAY** hoặc **Cài Cronjob** để lên lịch
 
-### 🪟 Windows (Task Scheduler)
+### 3️⃣ Cài Cronjob
 
-1. Mở **Task Scheduler** (`taskschd.msc`)
-2. **Create Basic Task...**
-3. Trigger: **Daily**, lúc 8:00 AM
-4. Action: **Start a program**
-   - Program: `python.exe`
-   - Arguments: `C:\path\to\uda_tools.py --hrm-auto`
-
-### 🍎 macOS (launchd)
-
-```bash
-# Tạo file ~/Library/LaunchAgents/com.uda.hrm.plist
-
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
-"http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0">
-<dict>
-    <key>Label</key>
-    <string>com.uda.hrm</string>
-    <key>ProgramArguments</key>
-    <array>
-        <string>/usr/bin/python3</string>
-        <string>/path/to/uda_tools.py</string>
-        <string>--hrm-auto</string>
-    </array>
-    <key>StartCalendarInterval</key>
-    <dict>
-        <key>Hour</key>
-        <integer>8</integer>
-        <key>Minute</key>
-        <integer>0</integer>
-    </dict>
-</dict>
-</plist>
-
-# Load
-launchctl load ~/Library/LaunchAgents/com.uda.hrm.plist
-```
+1. Click **📅 Cài Cronjob** trong tab HRM
+2. Chọn **giờ** và **ngày trong tuần**
+3. Tick **Nhớ mật khẩu** (bắt buộc cho cronjob)
+4. Click **Cài đặt**
 
 ---
 
-## 📁 Cấu trúc
+## 📁 Cấu trúc dự án
 
 ```
 📦 UDA_Tools_Pro/
 ├── 📄 uda_tools.py           # Main app (GUI + CLI)
+├── 📄 tool_nhap_diem_uda.py  # UDA grading module
+├── 📄 tool_hrm.py            # HRM module
 ├── 📄 build.py               # Build script
 ├── 📄 requirements.txt       # Dependencies
-├── 📄 template.xlsx          # Excel template
 ├── 📁 .github/workflows/     # CI/CD
 └── 📄 README.md
 ```
 
 ---
 
-## 🔧 Build
-
-### GitHub Actions (Khuyến nghị)
-
-Push lên GitHub → Actions tự động build → Download từ Releases
-
-### Build thủ công
-
-```bash
-# Cài dependencies
-pip install -r requirements.txt
-
-# Build
-python build.py
-```
-
-Kết quả: `dist/UDA_Tools_Pro` (hoặc `.exe` trên Windows)
-
----
-
-## 📊 Random Content
-
-Trong tab HRM, nhập nhiều nội dung công việc (mỗi dòng 1 nội dung):
-
-```
-Soạn nội dung thực hành
-Hỗ trợ sinh viên
-Chấm bài tập
-Soạn đề thi
-Chuẩn bị slide bài giảng
-```
-
-Mỗi lần chạy, tool sẽ **random chọn 1 nội dung** → Không bị trùng lặp!
-
----
-
-## 📂 Vị trí lưu dữ liệu
+## 🗂️ Vị trí lưu dữ liệu
 
 ```
 ~/.uda_tools/
-├── config.json    # Cấu hình
-├── history.json   # Lịch sử
-└── app.log        # Log
+├── config.json    # 💾 Cấu hình đã lưu
+├── history.json   # 📜 Lịch sử hoạt động
+└── app.log        # 📝 Log file
 ```
+
+---
+
+## 🔧 Build
+
+### 🤖 GitHub Actions (Tự động)
+
+```bash
+git push origin main
+# → Actions tự động build
+# → Download từ Releases
+```
+
+### 🛠️ Build thủ công
+
+```bash
+pip install pyinstaller
+python build.py
+```
+
+Output: `dist/UDA_Tools_Pro` (hoặc `.exe`)
 
 ---
 
 ## 🐛 Troubleshooting
 
-### Lỗi "Chrome not found"
+<details>
+<summary><b>❌ Lỗi "Chrome not found"</b></summary>
 
-1. Click **Cài đặt** ở góc trên phải
-2. Nhập đường dẫn tới Chrome/Brave/Edge
-3. Hoặc để trống nếu đã cài Chrome mặc định
+1. Click **⚙️ Cài đặt** góc trên phải
+2. Nhập đường dẫn Chrome/Brave/Edge
+3. Hoặc để trống nếu Chrome ở vị trí mặc định
 
-### Lỗi "Timeout"
+</details>
+
+<details>
+<summary><b>❌ Lỗi "Timeout"</b></summary>
 
 - Kiểm tra kết nối mạng
-- Tăng timeout trong code nếu server chậm
+- Server có thể đang chậm, thử lại sau
 
-### HRM không check-in
+</details>
+
+<details>
+<summary><b>❌ HRM không check-in</b></summary>
 
 - Kiểm tra email/password
-- Chạy thử với Headless = OFF để debug
+- Tắt **Chạy ẩn** để debug
+
+</details>
+
+<details>
+<summary><b>❌ Cronjob không chạy</b></summary>
+
+- Đảm bảo đã tick **Nhớ mật khẩu**
+- Kiểm tra log: `~/.uda_tools/app.log`
+- Linux: `crontab -l`
+- macOS: `launchctl list | grep uda`
+- Windows: Task Scheduler
+
+</details>
+
+---
+
+## 📝 Changelog
+
+### v5.0.0 (2026-01-03)
+
+- ✨ Modern UI với gradient header
+- 🎨 Card-based layout
+- 📱 Responsive design với scroll
+- 📅 Chọn ngày trong tuần cho cronjob
+- 📥 Button tải Excel mẫu
+- 🖱️ Smooth mouse wheel scrolling
+
+### v4.0.0
+
+- 🔗 Tích hợp HRM + UDA trong 1 app
+- ⏰ Auto cronjob setup
+- 📜 Lịch sử hoạt động
 
 ---
 
 ## 📄 License
 
-MIT License
+MIT License © 2026
 
-## 👨‍💻 Author
+---
 
-Developed for UDA (Đại học Đông Á)
+<div align="center">
+
+**Made with ❤️ for UDA (Đại học Đông Á)**
+
+[⬆ Back to top](#-uda-tools-pro-v50)
+
+</div>
