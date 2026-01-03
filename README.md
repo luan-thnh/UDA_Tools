@@ -55,7 +55,7 @@ Click nút **"⚙️ Cài đặt"** ở góc trên phải để cấu hình:
 git init
 git add .
 git commit -m "Initial commit"
-git remote add origin https://github.com/YOUR_USERNAME/YOUR_REPO.git
+git remote add origin https://github.com/luan-thnh/UDA_Auto_Grader.git
 git push -u origin main
 ```
 
