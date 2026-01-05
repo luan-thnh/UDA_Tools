@@ -215,7 +215,7 @@ def read_excel_openpyxl(filepath):
 
 def run_uda_grader(username, password, monhoc, excel_file, selected_titles, 
                    status_callback, progress_callback=None, is_delete_mode=False, 
-                   headless=False, chrome_path=None):
+                   headless=False, chrome_path=None, timeout=20):
     """Main UDA grading function"""
     action_name = "XOA" if is_delete_mode else "NHAP"
     driver = None
@@ -232,7 +232,7 @@ def run_uda_grader(username, password, monhoc, excel_file, selected_titles,
             progress_callback(10)
         
         driver = get_chrome_driver(chrome_path, headless)
-        wait = WebDriverWait(driver, 20)
+        wait = WebDriverWait(driver, timeout)  # Dung timeout tu settings
 
         # Login
         status_callback("Dang nhap...")
@@ -369,7 +369,7 @@ def run_uda_grader(username, password, monhoc, excel_file, selected_titles,
 # ============== HRM AUTO LOGIC =======================
 # =====================================================
 def run_hrm_checkin(username, password, task_title, task_detail, 
-                    status_callback, chrome_path=None, headless=True):
+                    status_callback, chrome_path=None, headless=True, timeout=15):
     """HRM Auto Check-in function"""
     driver = None
     date_str = datetime.now().strftime('%d/%m/%Y')
@@ -377,7 +377,7 @@ def run_hrm_checkin(username, password, task_title, task_detail,
     try:
         status_callback("Khoi dong trinh duyet...")
         driver = get_chrome_driver(chrome_path, headless)
-        wait = WebDriverWait(driver, 15)
+        wait = WebDriverWait(driver, timeout)  # Dung timeout tu settings
 
         # Login
         status_callback("Dang nhap HRM...")
@@ -451,8 +451,8 @@ class SettingsWindow(ctk.CTkToplevel):
         self.on_save_callback = on_save_callback
         self.detected_chrome = detect_chrome_path()
         
-        self.title("⚙️ Cai dat trinh duyet")
-        self.geometry("600x320")
+        self.title("⚙️ Cai dat")
+        self.geometry("600x580")
         self.resizable(False, False)
         
         self._build_ui()
@@ -461,13 +461,13 @@ class SettingsWindow(ctk.CTkToplevel):
         self.grab_set()
         self.update()
         x = parent.winfo_x() + (parent.winfo_width() - 600) // 2
-        y = parent.winfo_y() + (parent.winfo_height() - 320) // 2
-        self.geometry(f"600x320+{x}+{y}")
+        y = parent.winfo_y() + (parent.winfo_height() - 580) // 2
+        self.geometry(f"600x580+{x}+{y}")
         self.lift()
         self.focus_force()
     
     def _build_ui(self):
-        # Main container
+        # Main container (no scroll needed - window is big enough)
         container = ctk.CTkFrame(self, fg_color="transparent")
         container.pack(fill="both", expand=True, padx=20, pady=15)
         
@@ -510,14 +510,64 @@ class SettingsWindow(ctk.CTkToplevel):
             self.chrome_entry.insert(0, self.cfg["chrome_path"])
         
         # Help text
-        ctk.CTkLabel(path_card, text="💡 De trong neu da phat hien Chrome. Chi nhap khi dung browser khac.", 
+        ctk.CTkLabel(path_card, text="💡 De trong neu da phat hien Chrome.", 
                      font=ctk.CTkFont(size=11),
                      text_color=("#6b7280", "#9ca3af")).grid(row=2, column=0, columnspan=3, 
                                                              sticky="w", padx=20, pady=(0, 15))
         
+        # Timeout Card
+        timeout_card = ctk.CTkFrame(container, corner_radius=15)
+        timeout_card.pack(fill="x", pady=10)
+        timeout_card.grid_columnconfigure(1, weight=1)
+        
+        ctk.CTkLabel(timeout_card, text="⏱️ THOI GIAN CHO (TIMEOUT)", 
+                     font=ctk.CTkFont(size=14, weight="bold"),
+                     text_color=("#4f46e5", "#a5b4fc")).grid(row=0, column=0, columnspan=2, 
+                                                            sticky="w", padx=20, pady=(15, 10))
+        
+        ctk.CTkLabel(timeout_card, text="💡 Tang gia tri nay neu mang cham, trang web load lau.", 
+                     font=ctk.CTkFont(size=11),
+                     text_color=("#6b7280", "#9ca3af")).grid(row=1, column=0, columnspan=2, 
+                                                             sticky="w", padx=20, pady=(0, 10))
+        
+        # Wait time slider
+        ctk.CTkLabel(timeout_card, text="Thoi gian cho (giay):", font=ctk.CTkFont(size=12)).grid(row=2, column=0, sticky="w", padx=20, pady=10)
+        
+        slider_frame = ctk.CTkFrame(timeout_card, fg_color="transparent")
+        slider_frame.grid(row=2, column=1, sticky="ew", padx=20, pady=10)
+        slider_frame.grid_columnconfigure(0, weight=1)
+        
+        current_timeout = self.cfg.get("timeout", 10)
+        self.timeout_var = ctk.IntVar(value=current_timeout)
+        
+        self.timeout_label = ctk.CTkLabel(slider_frame, text=f"{current_timeout}s", 
+                                           font=ctk.CTkFont(size=14, weight="bold"),
+                                           text_color=("#22c55e", "#16a34a"))
+        self.timeout_label.pack(side="right", padx=10)
+        
+        self.timeout_slider = ctk.CTkSlider(slider_frame, from_=5, to=60, 
+                                             number_of_steps=55,
+                                             variable=self.timeout_var,
+                                             command=self._on_timeout_change)
+        self.timeout_slider.pack(side="left", fill="x", expand=True)
+        
+        # Preset buttons
+        preset_frame = ctk.CTkFrame(timeout_card, fg_color="transparent")
+        preset_frame.grid(row=3, column=0, columnspan=2, sticky="ew", padx=20, pady=(0, 15))
+        
+        ctk.CTkButton(preset_frame, text="🚀 Nhanh (5s)", width=100, height=30,
+                      fg_color=("#22c55e", "#16a34a"), corner_radius=8,
+                      command=lambda: self._set_timeout(5)).pack(side="left", padx=5)
+        ctk.CTkButton(preset_frame, text="⚖️ Binh thuong (10s)", width=130, height=30,
+                      fg_color=("#6366f1", "#4f46e5"), corner_radius=8,
+                      command=lambda: self._set_timeout(10)).pack(side="left", padx=5)
+        ctk.CTkButton(preset_frame, text="🐢 Mang cham (30s)", width=130, height=30,
+                      fg_color=("#f59e0b", "#d97706"), corner_radius=8,
+                      command=lambda: self._set_timeout(30)).pack(side="left", padx=5)
+        
         # Buttons
         btn_frame = ctk.CTkFrame(container, fg_color="transparent")
-        btn_frame.pack(fill="x", pady=10)
+        btn_frame.pack(fill="x", pady=15)
         
         ctk.CTkButton(btn_frame, text="💾 Luu", width=120, height=40, corner_radius=10,
                       fg_color=("#22c55e", "#16a34a"), hover_color=("#15803d", "#14532d"),
@@ -526,6 +576,14 @@ class SettingsWindow(ctk.CTkToplevel):
         ctk.CTkButton(btn_frame, text="Huy", width=100, height=40, corner_radius=10,
                       fg_color=("gray60", "gray40"),
                       command=self.destroy).pack(side="right", padx=5)
+    
+    def _on_timeout_change(self, value):
+        self.timeout_label.configure(text=f"{int(value)}s")
+    
+    def _set_timeout(self, value):
+        self.timeout_var.set(value)
+        self.timeout_slider.set(value)
+        self.timeout_label.configure(text=f"{value}s")
     
     def _browse(self):
         ft = [("Executable", "*.exe"), ("All", "*.*")] if sys.platform == "win32" else [("All", "*")]
@@ -545,8 +603,11 @@ class SettingsWindow(ctk.CTkToplevel):
         else:
             self.cfg.pop("chrome_path", None)
         
+        # Save timeout
+        self.cfg["timeout"] = self.timeout_var.get()
+        
         self.on_save_callback(self.cfg)
-        messagebox.showinfo("Thanh cong", "Da luu cai dat!")
+        messagebox.showinfo("Thanh cong", f"Da luu cai dat!\nTimeout: {self.cfg['timeout']}s")
         self.destroy()
 
 # =====================================================
@@ -1421,7 +1482,8 @@ class App(ctk.CTk):
                 username, password, subject, filepath, selected,
                 self._update_uda_status, self._update_uda_progress,
                 is_delete, self.uda_headless.get(),
-                self.config.get("chrome_path")
+                self.config.get("chrome_path"),
+                self.config.get("timeout", 20)  # Timeout tu settings
             )
             self.btn_uda_import.configure(state="normal")
             self.btn_uda_delete.configure(state="normal")
@@ -1570,7 +1632,8 @@ class App(ctk.CTk):
                 username, password, task_title, task_detail,
                 self._update_hrm_status,
                 self.config.get("chrome_path"),
-                self.hrm_headless.get()
+                self.hrm_headless.get(),
+                self.config.get("timeout", 15)  # Timeout tu settings
             )
             self.btn_hrm_run.configure(state="normal")
         
@@ -1603,7 +1666,8 @@ def run_hrm_auto():
         username, password, task_title, task_detail,
         lambda x: logger.info(x),
         config.get("chrome_path"),
-        headless=True
+        headless=True,
+        timeout=config.get("timeout", 15)  # Timeout tu settings
     )
     
     if success:

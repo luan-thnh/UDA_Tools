@@ -44,15 +44,14 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y python3-tk upx-ucl
+          sudo apt-get install -y python3-tk
 
       - name: Install UPX (macOS)
         if: runner.os == 'macOS'
         run: brew install upx
 
-      - name: Install UPX (Windows)
-        if: runner.os == 'Windows'
-        run: choco install upx -y
+      # NOTE: Khong cai UPX tren Windows de tranh loi Python DLL
+      # "Failed to load Python DLL" xay ra khi UPX compress python*.dll
 
       - name: Install Python dependencies
         run: |

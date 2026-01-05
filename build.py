@@ -22,7 +22,7 @@ if sys.platform == "win32":
 
 APP_NAME = "UDA_Tools_Pro"
 MAIN_SCRIPT = "uda_tools.py"
-VERSION = "4.0.0"
+VERSION = "5.0.0"
 
 # Icon files (optional)
 ICON_WIN = "icon.ico"
@@ -62,8 +62,8 @@ EXCLUDES = [
     "xmlrpc", "curses",
 ]
 
-# Su dung UPX de nen (neu co)
-USE_UPX = True
+# KHONG su dung UPX - gay loi Python DLL tren Windows
+USE_UPX = False
 
 # =====================================================
 # =============== HAM HO TRO ==========================
@@ -184,15 +184,9 @@ def build_app():
         "--strip",              # Strip debug symbols (giam size)
     ]
     
-    # Them UPX neu duoc bat va co san
-    if USE_UPX:
-        if shutil.which("upx"):
-            print("    [OK] UPX compression: ENABLED")
-        else:
-            cmd.append("--noupx")
-            print("    [!] UPX not installed, skipping compression")
-    else:
-        cmd.append("--noupx")
+    # QUAN TRONG: Khong dung UPX tren Windows vi gay loi Python DLL
+    cmd.append("--noupx")
+    print("    [!] UPX disabled (prevents Python DLL errors on Windows)")
     
     # Add excludes de giam size
     for exc in EXCLUDES:
